@@ -2,7 +2,9 @@ package main
 
 import (
 	"os"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/disgoorg/disgo/discord"
@@ -69,6 +71,7 @@ func (t *Transcript) AddMessage(m discord.Message) {
 		name = t.nameOverride[m.Author.ID.String()].(string)
 	} else {
 		name = m.Author.Username
+		t.nameOverride[m.Author.ID.String()] = name
 	}
 
 	// create a new block
@@ -233,6 +236,7 @@ func (t *Transcript) SaveTranscript() {
 
 			// preprocess message to handle newlines
 			content := strings.ReplaceAll(m.Content, "\n", "\n> ")
+			content = t.replaceMentions(content)
 
 			writeToFile(f, "> "+content)
 			writeToFile(f, "")
@@ -258,4 +262,26 @@ func writeToFile(file *os.File, content string) {
 		eris.Wrap(err, "failed to write to file")
 		log.Panic(err)
 	}
+}
+
+func (t *Transcript) replaceMentions(content string) string {
+	outerPart := regexp.MustCompile("<@!*&*|>")
+
+	return regexp.MustCompile("<@!*&*[0-9]+>").ReplaceAllStringFunc(content, func(s string) string {
+		idStr := outerPart.ReplaceAllString(s, "")
+
+		idNum, err := strconv.ParseUint(idStr, 10, 64)
+		if err != nil {
+			eris.Wrap(err, "failed to parse id")
+			log.Panic(err)
+		}
+
+		id := snowflake.ID(idNum)
+
+		if val, ok := t.nameOverride[id.String()].(string); ok {
+			return "@" + val
+		} else {
+			return s
+		}
+	})
 }
