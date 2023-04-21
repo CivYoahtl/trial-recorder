@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"sort"
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/rest"
@@ -83,8 +84,28 @@ func (t *Transcript) AddMessagesPage(messages rest.Page[discord.Message]) {
 		count++
 	}
 
+	t.Sort()
+
 	// trim excess messages
 	t.RemoveExcessMessages()
+}
+
+// brute force sorting after inital sort
+func (t *Transcript) Sort() {
+	sort.Slice(t.Blocks, func(i, j int) bool {
+		iValue := t.Blocks[i].Messages[0].ID.Time().Compare(t.Blocks[j].Messages[0].ID.Time())
+
+		if iValue == 0 {
+			// same time??
+			return false
+		} else if iValue == 1 {
+			// i comes before j
+			return false
+		} else {
+			// j comes before i
+			return true
+		}
+	})
 }
 
 // removes all messages after end message
