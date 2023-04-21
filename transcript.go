@@ -119,8 +119,8 @@ func (t *Transcript) RemoveExcessMessages() {
 func (t *Transcript) GetStats() TranscriptStats {
 	totalMessages := 0
 	seenUsers := []snowflake.ID{}
-	startTime := t.Blocks[0].Messages[0].ID.Time().Format("Mon, 02 Jan 2006 15:04:05 MST")
-	endTime := t.Blocks[len(t.Blocks)-1].Messages[len(t.Blocks[len(t.Blocks)-1].Messages)-1].ID.Time().Format("Mon, 02 Jan 2006 15:04:05 MST")
+	startTime := t.Blocks[len(t.Blocks)-1].Messages[len(t.Blocks[len(t.Blocks)-1].Messages)-1].ID.Time().Format("Mon, 02 Jan 2006 15:04:05 MST")
+	endTime := t.Blocks[0].Messages[0].ID.Time().Format("Mon, 02 Jan 2006 15:04:05 MST")
 
 	for _, b := range t.Blocks {
 
