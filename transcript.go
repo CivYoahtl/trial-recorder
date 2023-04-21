@@ -25,9 +25,10 @@ type MsgBlock struct {
 }
 
 type Transcript struct {
-	Blocks     []MsgBlock
-	StartMsgID snowflake.ID
-	EndMsgID   snowflake.ID
+	Blocks       []MsgBlock
+	StartMsgID   snowflake.ID
+	EndMsgID     snowflake.ID
+	nameOverride map[string]interface{}
 }
 
 type TranscriptStats struct {
@@ -61,10 +62,19 @@ func (t *Transcript) AddMessage(m discord.Message) {
 		ID:      m.ID,
 	}
 
+	var name string
+
+	// check if we have a name override
+	if t.nameOverride[m.Author.ID.String()] != nil {
+		name = t.nameOverride[m.Author.ID.String()].(string)
+	} else {
+		name = m.Author.Username
+	}
+
 	// create a new block
 	msgBlock := MsgBlock{
 		UserId:   m.Author.ID,
-		Name:     m.Author.Username,
+		Name:     name,
 		Messages: []Msg{msg},
 	}
 	t.Blocks = append([]MsgBlock{msgBlock}, t.Blocks...)
@@ -232,8 +242,13 @@ func (t *Transcript) SaveTranscript() {
 }
 
 // creates a new transcript
-func NewTranscript(startMsgID, endMsgID snowflake.ID) *Transcript {
-	return &Transcript{StartMsgID: startMsgID, EndMsgID: endMsgID, Blocks: []MsgBlock{}}
+func NewTranscript(startMsgID, endMsgID snowflake.ID, nameOverride map[string]interface{}) *Transcript {
+	return &Transcript{
+		StartMsgID:   startMsgID,
+		EndMsgID:     endMsgID,
+		Blocks:       []MsgBlock{},
+		nameOverride: nameOverride,
+	}
 }
 
 // simpe util to append a line to a file

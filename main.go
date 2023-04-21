@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+
 	"github.com/disgoorg/disgo/rest"
 	"github.com/disgoorg/log"
 	"github.com/disgoorg/snowflake/v2"
@@ -31,7 +33,7 @@ func main() {
 	endId := snowflake.ID(viper.GetUint("END_MSG_ID"))
 
 	// new transcript manager
-	transcript := NewTranscript(startId, endId)
+	transcript := NewTranscript(startId, endId, getNameOverrides())
 
 	// get messages
 	messages := client.GetMessagesPage(channelId, startId, 50)
@@ -54,4 +56,15 @@ func main() {
 
 	// save transcript
 	transcript.SaveTranscript()
+}
+
+// parse name override into map
+func getNameOverrides() (nameOverride map[string]interface{}) {
+	// parse override into map
+	err := json.Unmarshal([]byte(viper.GetString("NAME_OVERRIDE")), &nameOverride)
+	if err != nil {
+		err = eris.Wrap(err, "failed to unmarshal name override")
+		log.Panic(err)
+	}
+	return
 }
