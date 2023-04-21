@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"sort"
+	"strings"
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/rest"
@@ -219,8 +220,11 @@ func (t *Transcript) SaveTranscript() {
 		writeToFile(f, "")
 		// println(b.Name)
 		for _, m := range b.Messages {
-			// println(m)
-			writeToFile(f, "> "+m.Content)
+
+			// preprocess message to handle newlines
+			content := strings.ReplaceAll(m.Content, "\n", "\n> ")
+
+			writeToFile(f, "> "+content)
 			writeToFile(f, "")
 		}
 		writeToFile(f, "")
