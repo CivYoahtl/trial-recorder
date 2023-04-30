@@ -279,7 +279,7 @@ func (t *Transcript) replaceMentions(content string) string {
 		id := snowflake.ID(idNum)
 
 		if val, ok := t.nameOverride[id.String()].(string); ok {
-			return "@" + val
+			return "`@" + val + "`"
 		} else {
 			return s
 		}
