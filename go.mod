@@ -3,7 +3,7 @@ module github.com/CivYoahtl/trial-recorder
 go 1.20
 
 require (
-	github.com/disgoorg/disgo v0.16.4
+	github.com/disgoorg/disgo v0.16.5
 	github.com/disgoorg/log v1.2.0
 	github.com/disgoorg/snowflake/v2 v2.0.1
 	github.com/rotisserie/eris v0.5.4
@@ -11,7 +11,7 @@ require (
 )
 
 require (
-	github.com/disgoorg/json v1.0.0 // indirect
+	github.com/disgoorg/json v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
