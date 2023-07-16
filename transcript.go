@@ -198,7 +198,9 @@ func (t *Transcript) PrintTranscript() {
 // writes transcript to a file
 func (t *Transcript) SaveTranscript() {
 	folderPath := "transcripts"
-	name := viper.GetString("TRIAL_NAME")
+	trialName := viper.GetString("TRIAL_NAME")
+
+	fileName := t.FormatFileName(trialName)
 
 	// check if folder exists
 	if _, err := os.Stat(folderPath); eris.Is(err, os.ErrNotExist) {
@@ -212,7 +214,7 @@ func (t *Transcript) SaveTranscript() {
 	}
 
 	// create file
-	f, err := os.Create(folderPath + "/" + name + ".md")
+	f, err := os.Create(folderPath + "/" + fileName + ".md")
 	if err != nil {
 		eris.Wrap(err, "failed to create file")
 		log.Panic(err)
@@ -222,7 +224,7 @@ func (t *Transcript) SaveTranscript() {
 	defer f.Close()
 
 	// scaffold the file
-	writeToFile(f, "# "+name)
+	writeToFile(f, "# "+trialName)
 	writeToFile(f, "## Case")
 	writeToFile(f, "_REPLACE ME: need a sumarry of the case here_")
 	writeToFile(f, "## Proceedings")
@@ -284,4 +286,21 @@ func (t *Transcript) replaceMentions(content string) string {
 			return s
 		}
 	})
+}
+
+// formats the trial name for use as the filename of the transcript
+func (t *Transcript) FormatFileName(trialName string) (fileName string) {
+	// force lowercase
+	fileName = strings.ToLower(trialName)
+
+	// clear whitespace
+	fileName = strings.ReplaceAll(fileName, " ", "_")
+
+	// remove special characters
+	fileName = strings.ReplaceAll(fileName, ".", "")
+	fileName = strings.ReplaceAll(fileName, ",", "")
+	fileName = strings.ReplaceAll(fileName, ":", "")
+	fileName = strings.ReplaceAll(fileName, ";", "")
+
+	return
 }
