@@ -3,7 +3,7 @@ module github.com/CivYoahtl/trial-recorder
 go 1.20
 
 require (
-	github.com/disgoorg/disgo v0.16.7
+	github.com/disgoorg/disgo v0.16.8
 	github.com/disgoorg/log v1.2.1
 	github.com/disgoorg/snowflake/v2 v2.0.1
 	github.com/rotisserie/eris v0.5.4
