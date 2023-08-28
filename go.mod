@@ -3,7 +3,7 @@ module github.com/CivYoahtl/trial-recorder
 go 1.20
 
 require (
-	github.com/disgoorg/disgo v0.16.8
+	github.com/disgoorg/disgo v0.16.9
 	github.com/disgoorg/log v1.2.1
 	github.com/disgoorg/snowflake/v2 v2.0.1
 	github.com/rotisserie/eris v0.5.4
@@ -23,9 +23,9 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
-	golang.org/x/exp v0.0.0-20220325121720-054d8573a5d8 // indirect
-	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/exp v0.0.0-20230801115018-d63ba01acd4b // indirect
+	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/text v0.12.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
