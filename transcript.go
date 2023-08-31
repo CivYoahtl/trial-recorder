@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"regexp"
 	"sort"
@@ -15,9 +18,18 @@ import (
 	"github.com/spf13/viper"
 )
 
+type MsgAttachment struct {
+	ID          snowflake.ID
+	Filename    string
+	ContentType string
+	URL         string
+	Size        int
+}
+
 type Msg struct {
-	Content string
-	ID      snowflake.ID
+	Content     string
+	ID          snowflake.ID
+	Attachments []MsgAttachment
 }
 
 type MsgBlock struct {
@@ -45,23 +57,30 @@ func (t *Transcript) AddMessage(m discord.Message) {
 	// we get messages in the reverse order they were send,
 	// so we need to add them in the reverse order we get them
 
+	msg := Msg{
+		Content:     m.Content,
+		ID:          m.ID,
+		Attachments: []MsgAttachment{},
+	}
+
+	if len(m.Attachments) > 0 {
+		for _, a := range m.Attachments {
+			msg.Attachments = append(msg.Attachments, MsgAttachment{
+				ID:          a.ID,
+				Filename:    a.Filename,
+				ContentType: *a.ContentType,
+				URL:         a.URL,
+				Size:        a.Size,
+			})
+		}
+	}
+
 	// if first block is the same user
 	if len(t.Blocks) > 0 && t.Blocks[0].UserId == m.Author.ID {
 		// just put the message in the first block
-
-		// create a new message
-		message := Msg{
-			Content: m.Content,
-			ID:      m.ID,
-		}
-		t.Blocks[0].Messages = append([]Msg{message}, t.Blocks[0].Messages...)
+		t.Blocks[0].Messages = append([]Msg{msg}, t.Blocks[0].Messages...)
 
 		return
-	}
-
-	msg := Msg{
-		Content: m.Content,
-		ID:      m.ID,
 	}
 
 	var name string
@@ -197,10 +216,13 @@ func (t *Transcript) PrintTranscript() {
 
 // writes transcript to a file
 func (t *Transcript) SaveTranscript() {
-	folderPath := "transcripts"
-	trialName := viper.GetString("TRIAL_NAME")
+	log.Info("Saving transcript...")
 
-	fileName := t.FormatFileName(trialName)
+	trialName := viper.GetString("TRIAL_NAME")
+	// format trial name for use as filename
+	trailNameFormated := t.FormatFileName(trialName)
+
+	folderPath := fmt.Sprintf("transcripts/%s", trailNameFormated)
 
 	// check if folder exists
 	if _, err := os.Stat(folderPath); eris.Is(err, os.ErrNotExist) {
@@ -214,7 +236,7 @@ func (t *Transcript) SaveTranscript() {
 	}
 
 	// create file
-	f, err := os.Create(folderPath + "/" + fileName + ".md")
+	f, err := os.Create(folderPath + "/" + trailNameFormated + ".md")
 	if err != nil {
 		eris.Wrap(err, "failed to create file")
 		log.Panic(err)
@@ -236,15 +258,67 @@ func (t *Transcript) SaveTranscript() {
 		// println(b.Name)
 		for _, m := range b.Messages {
 
+			attachments := ""
+
+			for _, a := range m.Attachments {
+				// construct attachment path for use on the website
+				attachmentPath := fmt.Sprintf("../../assets/judiciary/%s/%s", trailNameFormated, a.Filename)
+
+				attachments += fmt.Sprintf("![%s](%s)\n", a.Filename, attachmentPath)
+				t.saveAttachment(a, folderPath)
+			}
+
 			// preprocess message to handle newlines
 			content := strings.ReplaceAll(m.Content, "\n", "\n> ")
 			content = t.replaceMentions(content)
 
 			writeToFile(f, "> "+content)
-			writeToFile(f, "")
+			// writeToFile(f, "")
+
+			// only write attachments if there are any
+			if len(attachments) > 0 {
+				writeToFile(f, "")
+				writeToFile(f, attachments)
+			}
 		}
 		writeToFile(f, "")
 	}
+
+	log.Info("Transcript saved!")
+}
+
+func (t *Transcript) saveAttachment(attachment MsgAttachment, folderPath string) {
+	// Create blank file
+	file, err := os.Create(folderPath + "/" + attachment.Filename)
+	if err != nil {
+		err := eris.Wrap(err, "failed to create attachment file")
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	// http client to download attachment
+	client := http.Client{
+		CheckRedirect: func(r *http.Request, via []*http.Request) error {
+			r.URL.Opaque = r.URL.Path
+			return nil
+		},
+	}
+
+	// Put content on file
+	resp, err := client.Get(attachment.URL)
+	if err != nil {
+		err := eris.Wrap(err, "failed to download attachment")
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	size, err := io.Copy(file, resp.Body)
+	if err != nil {
+		err := eris.Wrap(err, "failed to write attachment to file")
+		log.Fatal(err)
+	}
+
+	log.Debugf("Saved attachment: %s (%d)", attachment.Filename, size)
 }
 
 // creates a new transcript

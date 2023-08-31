@@ -43,6 +43,9 @@ func main() {
 
 	log.Info("Done getting messages")
 
+	// save transcript
+	transcript.SaveTranscript()
+
 	stats := transcript.GetStats()
 
 	log.Info("Stats:")
@@ -50,12 +53,6 @@ func main() {
 	log.Infof("\tTotal users: %d", stats.TotalUsers)
 	log.Infof("\tStart date: %s", stats.StartDate)
 	log.Infof("\tEnd date: %s", stats.EndDate)
-
-	// // print transcript
-	// transcript.PrintTranscript()
-
-	// save transcript
-	transcript.SaveTranscript()
 }
 
 // parse name override into map
