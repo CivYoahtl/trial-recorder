@@ -40,8 +40,6 @@ type MsgBlock struct {
 
 type Transcript struct {
 	Blocks       []MsgBlock
-	StartMsgID   snowflake.ID
-	EndMsgID     snowflake.ID
 	nameOverride map[string]interface{}
 }
 
@@ -118,9 +116,6 @@ func (t *Transcript) AddMessagesPage(messages rest.Page[discord.Message]) {
 	}
 
 	t.Sort()
-
-	// trim excess messages
-	t.RemoveExcessMessages()
 }
 
 // brute force sorting after inital sort
@@ -139,34 +134,6 @@ func (t *Transcript) Sort() {
 			return true
 		}
 	})
-}
-
-// removes all messages after end message
-func (t *Transcript) RemoveExcessMessages() {
-	atEnd := false
-
-	// remove messages after end id
-	for i := 0; i < len(t.Blocks); i++ {
-
-		for j := 0; j < len(t.Blocks[i].Messages); j++ {
-			msg := t.Blocks[i].Messages[j]
-
-			// if found end message
-			if msg.ID == t.EndMsgID {
-				atEnd = true
-
-				// if not at end of array, remove all messages after end message
-				if j+1 < len(t.Blocks[i].Messages) {
-					t.Blocks[i].Messages = t.Blocks[i].Messages[:j+1]
-				}
-			}
-		}
-
-		// if at end, remove all blocks after end block
-		if atEnd {
-			t.Blocks = t.Blocks[:i+1]
-		}
-	}
 }
 
 // Gets basic stats about the transcript
@@ -322,10 +289,8 @@ func (t *Transcript) saveAttachment(attachment MsgAttachment, folderPath string)
 }
 
 // creates a new transcript
-func NewTranscript(startMsgID, endMsgID snowflake.ID, nameOverride map[string]interface{}) *Transcript {
+func NewTranscript(nameOverride map[string]interface{}) *Transcript {
 	return &Transcript{
-		StartMsgID:   startMsgID,
-		EndMsgID:     endMsgID,
 		Blocks:       []MsgBlock{},
 		nameOverride: nameOverride,
 	}

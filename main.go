@@ -30,10 +30,9 @@ func main() {
 	// create snowflakes for ids
 	channelId := snowflake.ID(viper.GetUint("CHANNEL_ID"))
 	startId := snowflake.ID(viper.GetUint("START_MSG_ID"))
-	endId := snowflake.ID(viper.GetUint("END_MSG_ID"))
 
 	// new transcript manager
-	transcript := NewTranscript(startId, endId, getNameOverrides())
+	transcript := NewTranscript(getNameOverrides())
 
 	// get messages
 	messages := client.GetMessagesPage(channelId, startId, 50)

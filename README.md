@@ -19,7 +19,6 @@ The bot will then record the messages in the channel specified by `CHANNEL_ID` f
 - `DISCORD_TOKEN` - The token to use to connect to Discord.
 - `CHANNEL_ID` - The ID of the channel to record from.
 - `START_MSG_ID` - The ID of the message to start recording from. This is exclusive, so the message with this ID will not be recorded.
-- `END_MSG_ID` - The ID of the message to end recording at. This is inclusive, so the message with this ID will be recorded.
 - `TRIAL_NAME` - The name of the trial to record.
 - `NAME_OVERRIDE` - A way to override the name of a discord user. Takes a json object with the discord user ID as the key and the name to use as the value. For example, `{"123456789012345678": "John Doe"}`.
 
