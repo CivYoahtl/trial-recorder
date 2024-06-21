@@ -100,8 +100,24 @@ func (t *Transcript) AddMessage(m discord.Message) {
 	t.Blocks = append([]MsgBlock{msgBlock}, t.Blocks...)
 }
 
+func (t *Transcript) AddMessages(client rest.Rest, channelId, startId snowflake.ID) {
+	messages := client.GetMessagesPage(channelId, startId, 50)
+	t.addMessagesPage(messages)
+
+	if channelId == startId {
+		// probably a thread, so we need to get the parent message
+		parentMsg, err := client.GetMessage(channelId, startId)
+		if err != nil {
+			err = eris.Wrap(err, "failed to get parent message")
+			log.Panic(err)
+		}
+		// add parent message to transcript
+		t.AddMessage(*parentMsg)
+	}
+}
+
 // Gets messages from a page and adds them to the transcript
-func (t *Transcript) AddMessagesPage(messages rest.Page[discord.Message]) {
+func (t *Transcript) addMessagesPage(messages rest.Page[discord.Message]) {
 	count := 0
 
 	// page through messages

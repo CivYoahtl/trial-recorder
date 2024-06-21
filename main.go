@@ -34,11 +34,8 @@ func main() {
 	// new transcript manager
 	transcript := NewTranscript(getNameOverrides())
 
-	// get messages
-	messages := client.GetMessagesPage(channelId, startId, 50)
-
 	// add messages to transcript
-	transcript.AddMessagesPage(messages)
+	transcript.AddMessages(client, channelId, startId)
 
 	log.Info("Done getting messages")
 
